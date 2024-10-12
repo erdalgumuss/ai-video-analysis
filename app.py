@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Blueprintleri uygulamaya dahil et
 app.register_blueprint(health_bp)
 app.register_blueprint(video_bp)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB yükleme sınırı
+app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024  # 100 MB yükleme sınırı
 
 # Ana sayfa rotası
 @app.route('/', methods=['GET'])

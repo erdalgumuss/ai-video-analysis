@@ -1,14 +1,13 @@
 import cv2
 import mediapipe as mp
 
+# Mediapipe ve OpenCV yapılandırması
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
+
 def analyze_gestures(video_path):
     """Videodaki yüz ifadelerini ve jestleri analiz eder"""
     
-    # Mediapipe ve OpenCV yapılandırması
-    mp_face_mesh = mp.solutions.face_mesh
-    face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
-
-    # Video yakalama
     cap = cv2.VideoCapture(video_path)
     frame_count = 0
     gesture_data = []
@@ -26,33 +25,33 @@ def analyze_gestures(video_path):
         # Yüz analizini yap
         results = face_mesh.process(frame_rgb)
 
-        # Jest ve mimik tespiti
         if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks:
-                # Göz açıklığı ve ağız hareketi gibi bazı jestleri tespit et
-                try:
-                    eye_openness = face_landmarks.landmark[145].y - face_landmarks.landmark[159].y
-                    mouth_openness = face_landmarks.landmark[13].y - face_landmarks.landmark[14].y
+                
+                # Kaş hareketleri (Kaş kaldırma ve kaş çatma)
+                left_brow_height = face_landmarks.landmark[53].y - face_landmarks.landmark[52].y
+                right_brow_height = face_landmarks.landmark[282].y - face_landmarks.landmark[283].y
+                brow_movement = (left_brow_height + right_brow_height) / 2
+                
+                # Göz kırpma tespiti (Göz üst ve alt noktaları arasındaki mesafe)
+                left_eye_openness = face_landmarks.landmark[145].y - face_landmarks.landmark[159].y
+                right_eye_openness = face_landmarks.landmark[374].y - face_landmarks.landmark[386].y
+                avg_eye_openness = (left_eye_openness + right_eye_openness) / 2
 
-                    # Jest verilerini kaydet
-                    gesture_data.append({
-                        "frame": frame_count,
-                        "eye_openness": eye_openness,
-                        "mouth_openness": mouth_openness
-                    })
+                # Ağız hareketleri (Gülümseme veya üzgün ifade)
+                mouth_width = face_landmarks.landmark[61].x - face_landmarks.landmark[291].x
+                mouth_openness = face_landmarks.landmark[13].y - face_landmarks.landmark[14].y
 
-                except IndexError as e:
-                    print(f"Yüz analizinde hata: {str(e)}")
-                    continue
+                # Basit jest puanlaması
+                gesture_data.append({
+                    "frame": frame_count,
+                    "brow_movement": brow_movement,
+                    "eye_openness": avg_eye_openness,
+                    "mouth_width": mouth_width,
+                    "mouth_openness": mouth_openness
+                })
 
-    # Kaynakları serbest bırak
     cap.release()
     face_mesh.close()
-
-    # Analiz sonucunu döndürmeden önce veriyi kontrol et
-    if len(gesture_data) == 0:
-        print("Hiçbir jest verisi tespit edilmedi.")
-    else:
-        print(f"Toplam jest verisi: {len(gesture_data)} kare")
 
     return gesture_data

@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal ortam (Virtualenv) dosyaları
+venv/
+env/
+ENV/
+
+# IDE ve editor dosyaları
+.vscode/
+.idea/
+
+# Sisteme özel dosyalar
+.DS_Store
+*.log
+
+# Test output
+coverage/
+*.cover
+
+# Log dosyaları
+*.log
+*.out
+
+# Yükleme dosyaları (örneğin: video dosyaları)
+uploads/
